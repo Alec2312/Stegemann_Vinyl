@@ -11,7 +11,20 @@ class VinylController extends Controller
      */
     public function index()
     {
-        //
+        $vinyls = \App\Models\Vinyl::all();
+        return view('vinyls.index', compact('vinyls'));
+    }
+
+    public function shop()
+    {
+        $vinyls = \App\Models\Vinyl::where('is_official', true)->get();
+        return view('vinyls.shop', compact('vinyls'));
+    }
+
+    public function marktplaats()
+    {
+        $vinyls = \App\Models\Vinyl::where('is_official', false)->get();
+        return view('vinyls.marktplaats', compact('vinyls'));
     }
 
     /**
@@ -19,7 +32,7 @@ class VinylController extends Controller
      */
     public function create()
     {
-        //
+        return view('vinyls.create');
     }
 
     /**
@@ -27,7 +40,28 @@ class VinylController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required',
+            'year' => 'required',
+            'description' => 'required',
+            'is_official' => 'required',
+            'price' => 'required',
+            'image' => 'required',
+        ]);
+
+        $imagePath = $request->file('image')->store('vinyls', 'public');
+
+        \App\Models\Vinyl::create([
+            'user_id' => auth()->id(),
+            'title' => $validated['title'],
+            'year' => $validated['year'],
+            'description' => $validated['description'],
+            'is_official' => $validated['is_official'],
+            'price' => $validated['price'],
+            'image' => $imagePath,
+        ]);
+
+        return redirect()->route('vinyls.marktplaats')->with('success', 'Vinyl toegevoegd!');
     }
 
     /**
@@ -35,7 +69,8 @@ class VinylController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $vinyl = \App\Models\Vinyl::findOrFail($id);
+        return view('vinyls.show', compact('vinyl'));
     }
 
     /**
